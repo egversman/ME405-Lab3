@@ -12,8 +12,8 @@
 
 import gc
 import pyb
-import src.cotask as cotask
-import src.task_share as task_share
+import cotask
+import task_share
 
 
 def task1_fun(shares):
