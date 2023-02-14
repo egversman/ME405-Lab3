@@ -14,6 +14,10 @@ import gc
 import pyb
 import src.cotask as cotask
 import src.task_share as task_share
+import motor_driver
+import encoder_reader
+import clp_controller
+import utime
 
 
 def task1_fun(shares):
@@ -63,6 +67,13 @@ if __name__ == "__main__":
     q0 = task_share.Queue('L', 16, thread_protect=False, overwrite=False,
                           name="Queue 0")
 
+    motor_dvr1 = motor_driver.MotorDriver()
+    encoder1 = encoder_reader.EncoderReader()
+    controller1 = clp_controller.CLPController()
+    motor_dvr2 = motor_driver.MotorDriver("select appropriate pins")
+    encoder2 = encoder_reader.EncoderReader("select appropriate pins")
+    controller2 = clp_controller.CLPController("select appropriate pins")
+    
     # Create the tasks. If trace is enabled for any task, memory will be
     # allocated for state transition tracing, and the application will run out
     # of memory after a while and quit. Therefore, use tracing only for 
