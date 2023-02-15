@@ -36,9 +36,7 @@ def task_motor1(shares):
         new_setpoint = setpoint_m1.get()
         controller1.set_setpoint(new_setpoint)
         motor_dvr1.set_duty_cycle(controller1.run(new_setpoint, curr_pos))
-        position_m1.put(
-            controller1.motor_positions[len(controller1.motor_positions)]
-            )
+        position_m1.put(controller1.motor_positions[0])
         yield 0
 
 
