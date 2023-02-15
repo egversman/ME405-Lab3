@@ -25,67 +25,106 @@ def task_motor1(shares):
     
     @param shares A list holding the share and queue used by this task
     """
-    # Get references to the share and queue which have been passed to this task
+    # Create motor1 objects.
     motor_dvr1 = motor_driver.MotorDriver()
     encoder1 = encoder_reader.EncoderReader()
     controller1 = clp_controller.CLPController()
+    
+    # Get references to the share and queue which have been passed to this task.
     setpoint_m1, position_m1 = shares
     
     while True:
-        curr_pos = encoder1.read()
         new_setpoint = setpoint_m1.get()
         controller1.set_setpoint(new_setpoint)
-        motor_dvr1.set_duty_cycle(controller1.run(new_setpoint, curr_pos))
+        motor_dvr1.set_duty_cycle(
+            controller1.run(new_setpoint, encoder1.read())
+            )
         position_m1.put(controller1.motor_positions[0])
         yield 0
 
 
-# def task2_fun(shares):
-#     """!
-#     Task which takes things out of a queue and share and displays them.
-#     @param shares A tuple of a share and queue from which this task gets data
-#     """
-#     # Get references to the share and queue which have been passed to this task
-#     the_share, the_queue = shares
+def task_motor2(shares):
+    """!
+    
+    @param shares A list holding the share and queue used by this task
+    """
+    # Create motor1 objects.
+    motor_dvr2 = motor_driver.MotorDriver("enter appropriate pins")
+    encoder2 = encoder_reader.EncoderReader("enter appropriate pins")
+    controller2 = clp_controller.CLPController("enter appropriate pins")
+    
+    # Get references to the share and queue which have been passed to this task.
+    setpoint_m2, position_m2 = shares
+    
+    while True:
+        new_setpoint = setpoint_m2.get()
+        controller2.set_setpoint(new_setpoint)
+        motor_dvr2.set_duty_cycle(
+            controller2.run(new_setpoint, encoder2.read())
+            )
+        position_m2.put(controller2.motor_positions[0])
+        yield 0
 
-#     while True:
-#         # Show everything currently in the queue and the value in the share
-#         print(f"Share: {the_share.get ()}, Queue: ", end='')
-#         while q0.any():
-#             print(f"{the_queue.get ()} ", end='')
-#         print('')
+def task_step_response(shares):
+    """!
+    
+    @param shares A list holding the share and queue used by this task
+    """
+    #
+    u2 = pyb.UART(2, baudrate=115200)
+    
+    # Get references to the share and queue which have been passed to this task.
+    setpoint_m1, position_m1, setpoint_m2, position_m2 = shares
+    
+    setpoint_m1.put("motor1 setpoint")
+    setpoint_m2.put("motor2 setpoint")
+    
+    while True:
+        yield 0
 
-#         yield 0
 
-
-# This code creates a share, a queue, and two tasks, then starts the tasks. The
-# tasks run until somebody presses ENTER, at which time the scheduler stops and
-# printouts show diagnostic information about the tasks, share, and queue.
+# The file main...
 if __name__ == "__main__":
     print("Testing ME405 stuff in cotask.py and task_share.py\r\n"
           "Press Ctrl-C to stop and show diagnostics.")
 
-    # Create a share and a queue to test function and diagnostic printouts
-    share_m1_setpoint = task_share.Share('l', thread_protect=False, name="Share 0")
-    share_m1_kp = task_share.Share('h', thread_protect=False, name="Share 0")
-    # share_m2_setpt = task_share.Share('l', thread_protect=False, name="Share 0")
-    # share_m2_kp = task_share.Share('h', thread_protect=False, name="Share 0")
+    # Create shares.
+    share_m1_setpoint = task_share.Share(
+        'l', thread_protect=False, name="Share m1 setpt"
+        )
+    share_m1_position = task_share.Share(
+        'l', thread_protect=False, name="Share m1 pos"
+        )
+    share_m2_setpoint = task_share.Share(
+        'l', thread_protect=False, name="Share m2 setpt"
+        )
+    share_m2_position = task_share.Share(
+        'l', thread_protect=False, name="Share m2 pos")
     
-    # Create the tasks. If trace is enabled for any task, memory will be
-    # allocated for state transition tracing, and the application will run out
-    # of memory after a while and quit. Therefore, use tracing only for 
-    # debugging and set trace to False when it's not needed
+    # Create the tasks.
     task1 = cotask.Task(
         task_motor1, name="Task_1", priority=1, period=20, 
-        profile=True, trace=False, shares=(share_m1_setpoint, share_m1_kp)
+        profile=False, trace=False, shares=(
+            share_m1_setpoint, share_m1_position
+            )
         )
-    # task2 = cotask.Task(task2_fun, name="Task_2", priority=2, period=1500,
-    #                     profile=True, trace=False, shares=(share0, q0))
+    task2 = cotask.Task(
+        task_motor2, name="Task_2", priority=1, period=20,
+        profile=False, trace=False, shares=(
+            share_m2_setpoint, share_m2_position
+            )
+        )
+    task3 = cotask.Task(
+        task_step_response, name="Task_2", priority=1, period=20,
+        profile=False, trace=False, shares=(
+            share_m2_setpoint, share_m2_position
+            )
+        )
+    
     cotask.task_list.append(task1)
-    # cotask.task_list.append(task2)
+    cotask.task_list.append(task2)
 
-    # Run the memory garbage collector to ensure memory is as defragmented as
-    # possible before the real-time scheduler is started
+    # Run the memory garbage collector.
     gc.collect()
 
     # Run the scheduler with the chosen scheduling algorithm. Quit if ^C pressed
