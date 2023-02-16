@@ -43,7 +43,7 @@ def task_motor1(shares):
         motor_dvr1.set_duty_cycle(
             controller1.run(new_setpoint, encoder1.read())
             )
-        position_m1.put(controller1.motor_positions[0])
+        position_m1.put(controller1.motor_positions[len(controller1.motor_positions)-1])
         yield 0
 
 
