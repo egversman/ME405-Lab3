@@ -35,7 +35,7 @@ def task_motor1(shares):
     
     # Get references to the share and queue which have been passed to this task.
     setpoint_m1, position_m1 = shares
-    yield 0
+    
     while True:
 #        print("motor1")
         new_setpoint = setpoint_m1.get()
@@ -62,7 +62,7 @@ def task_motor2(shares):
     
     # Get references to the share and queue which have been passed to this task.
     setpoint_m2, position_m2 = shares
-    yield 0
+
     while True:
 #        print("motor2")
         new_setpoint = setpoint_m2.get()
@@ -81,21 +81,25 @@ def task_step_response(shares):
     setpoint_m1, position_m1, setpoint_m2, position_m2 = shares
     setpoint_m1.put(20000)
     setpoint_m2.put(10000)
+    yield 0
     u2 = pyb.UART(2, baudrate=115200)
     start_time = utime.ticks_ms()
+    time = 0
 
     data = []
     
-    yield 0
-    while True:
+
+    while time < 3000:
         time = utime.ticks_ms() - start_time
         data.append(array.array('b',[time,position_m1.get(),position_m2.get()]))
         print([time,position_m1.get(),position_m2.get()])
         yield 0
+    
     for line in Data:
         u2.write(f'{line[0]},{line[1]}\r\n')
     u2.write(b"Done!\r\n")
     yield 0
+
     
     # Get references to the share and queue which have been passed to this task.
 
@@ -107,16 +111,16 @@ if __name__ == "__main__":
 
     # Create shares.
     share_m1_setpoint = task_share.Share(
-        'q', thread_protect=False, name="Share m1 setpt"
+        'l', thread_protect=False, name="Share m1 setpt"
         )
     share_m1_position = task_share.Share(
-        'q', thread_protect=False, name="Share m1 pos"
+        'l', thread_protect=False, name="Share m1 pos"
         )
     share_m2_setpoint = task_share.Share(
-        'q', thread_protect=False, name="Share m2 setpt"
+        'l', thread_protect=False, name="Share m2 setpt"
         )
     share_m2_position = task_share.Share(
-        'q', thread_protect=False, name="Share m2 pos")
+        'l', thread_protect=False, name="Share m2 pos")
     
 #     share_m1_setpoint.put(20000)
 #     share_m2_setpoint.put(10000)
