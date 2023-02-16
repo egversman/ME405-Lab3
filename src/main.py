@@ -18,6 +18,7 @@ import motor_driver
 import encoder_reader
 import clp_controller
 import utime
+import array
 
 
 def task_motor1(shares):
@@ -34,9 +35,9 @@ def task_motor1(shares):
     
     # Get references to the share and queue which have been passed to this task.
     setpoint_m1, position_m1 = shares
-    
+    yield 0
     while True:
-#         print("motor1")
+#        print("motor1")
         new_setpoint = setpoint_m1.get()
         controller1.set_setpoint(new_setpoint)
         motor_dvr1.set_duty_cycle(
@@ -61,9 +62,9 @@ def task_motor2(shares):
     
     # Get references to the share and queue which have been passed to this task.
     setpoint_m2, position_m2 = shares
-    
+    yield 0
     while True:
-#         print("motor2")
+#        print("motor2")
         new_setpoint = setpoint_m2.get()
         controller2.set_setpoint(new_setpoint)
         motor_dvr2.set_duty_cycle(
@@ -72,22 +73,31 @@ def task_motor2(shares):
         position_m2.put(controller2.motor_positions[0])
         yield 0
 
-# def task_step_response(shares):
-#     """!
-#     
-#     @param shares A list holding the share and queue used by this task
-#     """
-#     #
-#     u2 = pyb.UART(2, baudrate=115200)
-#     
-#     # Get references to the share and queue which have been passed to this task.
-#     setpoint_m1, position_m1, setpoint_m2, position_m2 = shares
-#     
-#     setpoint_m1.put("motor1 setpoint")
-#     setpoint_m2.put("motor2 setpoint")
-#     
-#     while True:
-#         yield 0
+def task_step_response(shares):
+    """!
+    
+    @param shares A list holding the share and queue used by this task
+    """
+    setpoint_m1, position_m1, setpoint_m2, position_m2 = shares
+    setpoint_m1.put(20000)
+    setpoint_m2.put(10000)
+    u2 = pyb.UART(2, baudrate=115200)
+    start_time = utime.ticks_ms()
+
+    data = []
+    
+    yield 0
+    while True:
+        time = utime.ticks_ms() - start_time
+        data.append(array.array('b',[time,position_m1.get(),position_m2.get()]))
+        print([time,position_m1.get(),position_m2.get()])
+        yield 0
+    for line in Data:
+        u2.write(f'{line[0]},{line[1]}\r\n')
+    u2.write(b"Done!\r\n")
+    yield 0
+    
+    # Get references to the share and queue which have been passed to this task.
 
 
 # The file main...
@@ -97,43 +107,43 @@ if __name__ == "__main__":
 
     # Create shares.
     share_m1_setpoint = task_share.Share(
-        'l', thread_protect=False, name="Share m1 setpt"
+        'q', thread_protect=False, name="Share m1 setpt"
         )
     share_m1_position = task_share.Share(
-        'l', thread_protect=False, name="Share m1 pos"
+        'q', thread_protect=False, name="Share m1 pos"
         )
     share_m2_setpoint = task_share.Share(
-        'l', thread_protect=False, name="Share m2 setpt"
+        'q', thread_protect=False, name="Share m2 setpt"
         )
     share_m2_position = task_share.Share(
-        'l', thread_protect=False, name="Share m2 pos")
+        'q', thread_protect=False, name="Share m2 pos")
     
-    share_m1_setpoint.put(20000)
-    share_m2_setpoint.put(10000)
+#     share_m1_setpoint.put(20000)
+#     share_m2_setpoint.put(10000)
     
     # Create the tasks.
     task1 = cotask.Task(
-        task_motor1, name="Task_1", priority=1, period=20, 
+        task_motor1, name="Task_1", priority=1, period=10, 
         profile=True, trace=True, shares=(
             share_m1_setpoint, share_m1_position
             )
         )
     task2 = cotask.Task(
-        task_motor2, name="Task_2", priority=1, period=20,
+        task_motor2, name="Task_2", priority=1, period=10,
         profile=True, trace=True, shares=(
             share_m2_setpoint, share_m2_position
             )
         )
-#     task3 = cotask.Task(
-#         task_step_response, name="Task_2", priority=2, period=20,
-#         profile=False, trace=False, shares=(
-#             share_m1_setpoint, share_m1_position, share_m2_setpoint, share_m2_position
-#             )
-#         )
+    task3 = cotask.Task(
+        task_step_response, name="Task_3", priority=2, period=20,
+        profile=False, trace=False, shares=(
+            share_m1_setpoint, share_m1_position, share_m2_setpoint, share_m2_position
+            )
+        )
     
     cotask.task_list.append(task1)
     cotask.task_list.append(task2)
-#     cotask.task_list.append(task3)
+    cotask.task_list.append(task3)
 
     # Run the memory garbage collector.
     gc.collect()
