@@ -86,7 +86,7 @@ if __name__ == "__main__":
         pyb.Pin.board.PA10, pyb.Pin.board.PB4, pyb.Pin.board.PB5, 3
         )
     enc = EncoderReader(pyb.Pin.board.PC6, pyb.Pin.board.PC7, 8)
-    #moe.set_duty_cycle(-50)
+    moe.set_duty_cycle(100)
     
     while True:
         print(enc.read())

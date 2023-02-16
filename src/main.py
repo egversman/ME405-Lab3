@@ -37,8 +37,8 @@ def task_motor1(shares):
     setpoint_m1, position_m1 = shares
     
     while True:
-#        print("motor1")
         new_setpoint = setpoint_m1.get()
+#        print(new_setpoint)
         controller1.set_setpoint(new_setpoint)
         motor_dvr1.set_duty_cycle(
             controller1.run(new_setpoint, encoder1.read())
@@ -66,6 +66,7 @@ def task_motor2(shares):
     while True:
 #        print("motor2")
         new_setpoint = setpoint_m2.get()
+#        print(new_setpoint)
         controller2.set_setpoint(new_setpoint)
         motor_dvr2.set_duty_cycle(
             controller2.run(new_setpoint, encoder2.read())
@@ -79,8 +80,11 @@ def task_step_response(shares):
     @param shares A list holding the share and queue used by this task
     """
     setpoint_m1, position_m1, setpoint_m2, position_m2 = shares
+
     setpoint_m1.put(20000)
+    #print(setpoint_m1.get())
     setpoint_m2.put(10000)
+    #print(setpoint_m2.get())
     yield 0
     u2 = pyb.UART(2, baudrate=115200)
     start_time = utime.ticks_ms()
@@ -133,14 +137,14 @@ if __name__ == "__main__":
             )
         )
     task2 = cotask.Task(
-        task_motor2, name="Task_2", priority=1, period=10,
+        task_motor2, name="Task_2", priority=1, period=20,
         profile=True, trace=True, shares=(
             share_m2_setpoint, share_m2_position
             )
         )
     task3 = cotask.Task(
-        task_step_response, name="Task_3", priority=2, period=20,
-        profile=False, trace=False, shares=(
+        task_step_response, name="Task_3", priority=2, period=100,
+        profile=True, trace=True, shares=(
             share_m1_setpoint, share_m1_position, share_m2_setpoint, share_m2_position
             )
         )
