@@ -30,10 +30,13 @@ def task_motor1(shares):
     encoder1 = encoder_reader.EncoderReader()
     controller1 = clp_controller.CLPController()
     
+    controller1.set_Kp(0.2)
+    
     # Get references to the share and queue which have been passed to this task.
     setpoint_m1, position_m1 = shares
     
     while True:
+#         print("motor1")
         new_setpoint = setpoint_m1.get()
         controller1.set_setpoint(new_setpoint)
         motor_dvr1.set_duty_cycle(
@@ -48,15 +51,19 @@ def task_motor2(shares):
     
     @param shares A list holding the share and queue used by this task
     """
-    # Create motor1 objects.
-    motor_dvr2 = motor_driver.MotorDriver("enter appropriate pins")
-    encoder2 = encoder_reader.EncoderReader("enter appropriate pins")
-    controller2 = clp_controller.CLPController("enter appropriate pins")
+    # Create motor2 objects.
+    motor_dvr2 = motor_driver.MotorDriver(pyb.Pin.board.PC1, pyb.Pin.board.PA0, 
+                  pyb.Pin.board.PA1, 5)
+    encoder2 = encoder_reader.EncoderReader(pyb.Pin.board.PB6, pyb.Pin.board.PB7, 4)
+    controller2 = clp_controller.CLPController()
+    
+    controller2.set_Kp(0.1)
     
     # Get references to the share and queue which have been passed to this task.
     setpoint_m2, position_m2 = shares
     
     while True:
+#         print("motor2")
         new_setpoint = setpoint_m2.get()
         controller2.set_setpoint(new_setpoint)
         motor_dvr2.set_duty_cycle(
@@ -65,22 +72,22 @@ def task_motor2(shares):
         position_m2.put(controller2.motor_positions[0])
         yield 0
 
-def task_step_response(shares):
-    """!
-    
-    @param shares A list holding the share and queue used by this task
-    """
-    #
-    u2 = pyb.UART(2, baudrate=115200)
-    
-    # Get references to the share and queue which have been passed to this task.
-    setpoint_m1, position_m1, setpoint_m2, position_m2 = shares
-    
-    setpoint_m1.put("motor1 setpoint")
-    setpoint_m2.put("motor2 setpoint")
-    
-    while True:
-        yield 0
+# def task_step_response(shares):
+#     """!
+#     
+#     @param shares A list holding the share and queue used by this task
+#     """
+#     #
+#     u2 = pyb.UART(2, baudrate=115200)
+#     
+#     # Get references to the share and queue which have been passed to this task.
+#     setpoint_m1, position_m1, setpoint_m2, position_m2 = shares
+#     
+#     setpoint_m1.put("motor1 setpoint")
+#     setpoint_m2.put("motor2 setpoint")
+#     
+#     while True:
+#         yield 0
 
 
 # The file main...
@@ -101,28 +108,32 @@ if __name__ == "__main__":
     share_m2_position = task_share.Share(
         'l', thread_protect=False, name="Share m2 pos")
     
+    share_m1_setpoint.put(20000)
+    share_m2_setpoint.put(10000)
+    
     # Create the tasks.
     task1 = cotask.Task(
         task_motor1, name="Task_1", priority=1, period=20, 
-        profile=False, trace=False, shares=(
+        profile=True, trace=True, shares=(
             share_m1_setpoint, share_m1_position
             )
         )
     task2 = cotask.Task(
         task_motor2, name="Task_2", priority=1, period=20,
-        profile=False, trace=False, shares=(
+        profile=True, trace=True, shares=(
             share_m2_setpoint, share_m2_position
             )
         )
-    task3 = cotask.Task(
-        task_step_response, name="Task_2", priority=1, period=20,
-        profile=False, trace=False, shares=(
-            share_m2_setpoint, share_m2_position
-            )
-        )
+#     task3 = cotask.Task(
+#         task_step_response, name="Task_2", priority=2, period=20,
+#         profile=False, trace=False, shares=(
+#             share_m1_setpoint, share_m1_position, share_m2_setpoint, share_m2_position
+#             )
+#         )
     
     cotask.task_list.append(task1)
     cotask.task_list.append(task2)
+#     cotask.task_list.append(task3)
 
     # Run the memory garbage collector.
     gc.collect()
