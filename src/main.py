@@ -55,13 +55,9 @@ def task_motor2(shares):
     @param shares A list holding the share and queue used by this task
     """
     # Create motor2 objects.
-    motor_dvr2 = motor_driver.MotorDriver(
-        pyb.Pin.board.PC1, pyb.Pin.board.PA0, pyb.Pin.board.PA1, 5
-        )
+    motor_dvr2 = motor_driver.MotorDriver(pyb.Pin.board.PC1, pyb.Pin.board.PA0, pyb.Pin.board.PA1, 5)
     motor_dvr2.enable()
-    encoder2 = encoder_reader.EncoderReader(
-        pyb.Pin.board.PB6, pyb.Pin.board.PB7, 4
-        )
+    encoder2 = encoder_reader.EncoderReader(pyb.Pin.board.PB6, pyb.Pin.board.PB7, 4)
     controller2 = clp_controller.CLPController()
     
     controller2.set_Kp(0.2)
@@ -96,10 +92,7 @@ def task_step_response(shares):
     
     while time < 3000:
         time = utime.ticks_ms() - start_time
-        # data.append(
-        #     array.array('b',[time, position_m1.get(), position_m2.get()])
-        #     )
-        data.append('b'[time, position_m1.get(), position_m2.get()])
+        data.append(array.array('b',[time, position_m1.get(), position_m2.get()]))
         print([time, position_m1.get(), position_m2.get()])
 #         print(data)
         yield 0
