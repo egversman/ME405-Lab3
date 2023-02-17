@@ -28,6 +28,7 @@ def task_motor1(shares):
     """
     # Create motor1 objects.
     motor_dvr1 = motor_driver.MotorDriver()
+    motor_dvr1.enable()
     encoder1 = encoder_reader.EncoderReader()
     controller1 = clp_controller.CLPController()
     
@@ -54,12 +55,9 @@ def task_motor2(shares):
     @param shares A list holding the share and queue used by this task
     """
     # Create motor2 objects.
-    motor_dvr2 = motor_driver.MotorDriver(
-        pyb.Pin.board.PC1, pyb.Pin.board.PA0, pyb.Pin.board.PA1, 5
-        )
-    encoder2 = encoder_reader.EncoderReader(
-        pyb.Pin.board.PB6, pyb.Pin.board.PB7, 4
-        )
+    motor_dvr2 = motor_driver.MotorDriver(pyb.Pin.board.PC1, pyb.Pin.board.PA0, pyb.Pin.board.PA1, 5)
+    motor_dvr2.enable()
+    encoder2 = encoder_reader.EncoderReader(pyb.Pin.board.PB6, pyb.Pin.board.PB7, 4)
     controller2 = clp_controller.CLPController()
     
     controller2.set_Kp(0.1)
@@ -166,3 +164,10 @@ if __name__ == "__main__":
     print(task_share.show_all())
     print(task1.get_trace())
     print('')
+
+    # call code to disable motor
+    motor_dvr1.disable()
+    motor_dvr2.disable()
+    
+
+#write an enable and disable method
