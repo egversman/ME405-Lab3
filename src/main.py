@@ -60,7 +60,7 @@ def task_motor2(shares):
     encoder2 = encoder_reader.EncoderReader(pyb.Pin.board.PB6, pyb.Pin.board.PB7, 4)
     controller2 = clp_controller.CLPController()
     
-    controller2.set_Kp(0.2)
+    controller2.set_Kp(0.02)
     
     # Get references to the share and queue which have been passed to this task.
     setpoint_m2, position_m2 = shares
@@ -71,7 +71,9 @@ def task_motor2(shares):
         motor_dvr2.set_duty_cycle(
             controller2.run(new_setpoint, encoder2.read())
             )
-        position_m2.put(len(controller2.motor_positions)-1) # encoder starting to read now when changing the position
+        position_m2.put(
+            controller2.motor_positions[len(controller2.motor_positions)-1]
+            ) # encoder starting to read now when changing the position
         yield 0
 
 def task_step_response(shares):
@@ -81,26 +83,33 @@ def task_step_response(shares):
     """
     setpoint_m1, position_m1, setpoint_m2, position_m2 = shares
     
+    
     #setpoint_m1.put(20000)
     #setpoint_m2.put(10000)
     # print value of setpoint in diff locations
+    
     u2 = pyb.UART(2, baudrate=115200)
     start_time = utime.ticks_ms()
     time = 0
 
     data = []
     
-    while time < 3000:
-        time = utime.ticks_ms() - start_time
-        data.append(array.array('b',[time, position_m1.get(), position_m2.get()]))
-        print([time, position_m1.get(), position_m2.get()])
-#         print(data)
+    while True:
+        #if setpoint reached
+        if time < 3000:
+            
+            time = utime.ticks_ms() - start_time
+            data.append(array.array('b',[time, position_m1.get(), position_m2.get()]))
+    #         data.append('b',[time, position_m1.get(), position_m2.get()])
+            print([time, position_m1.get(), position_m2.get()])
+    #         print(data)
+            yield 0
+        #some_flag = 1
+        
+        for line in data:
+            u2.write(f'{line[0]},{line[1]}\r\n')
+        u2.write(b"Done!\r\n")
         yield 0
-    
-    for line in data:
-        u2.write(f'{line[0]},{line[1]}\r\n')
-    u2.write(b"Done!\r\n")
-    yield 0
 
 
 # The file main...
