@@ -61,7 +61,7 @@ class MotorDriver:
             ch1.pulse_width_percent(0) #IN1A low
             ch2.pulse_width_percent(abs(level)) #PWM signal to IN2A
         
-        # print (f"Setting duty cycle to {level}")
+        #print (f"Setting duty cycle to {level}")
 
         
 if __name__ == "__main__":
