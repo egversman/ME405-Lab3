@@ -38,12 +38,13 @@ def task_motor1(shares):
     
     while True:
         new_setpoint = setpoint_m1.get()
-#        print(new_setpoint)
         controller1.set_setpoint(new_setpoint)
         motor_dvr1.set_duty_cycle(
             controller1.run(new_setpoint, encoder1.read())
             )
-        position_m1.put(controller1.motor_positions[len(controller1.motor_positions)-1])
+        position_m1.put(
+            controller1.motor_positions[len(controller1.motor_positions)-1]
+            )
         yield 0
 
 
@@ -53,9 +54,12 @@ def task_motor2(shares):
     @param shares A list holding the share and queue used by this task
     """
     # Create motor2 objects.
-    motor_dvr2 = motor_driver.MotorDriver(pyb.Pin.board.PC1, pyb.Pin.board.PA0, 
-                  pyb.Pin.board.PA1, 5)
-    encoder2 = encoder_reader.EncoderReader(pyb.Pin.board.PB6, pyb.Pin.board.PB7, 4)
+    motor_dvr2 = motor_driver.MotorDriver(
+        pyb.Pin.board.PC1, pyb.Pin.board.PA0, pyb.Pin.board.PA1, 5
+        )
+    encoder2 = encoder_reader.EncoderReader(
+        pyb.Pin.board.PB6, pyb.Pin.board.PB7, 4
+        )
     controller2 = clp_controller.CLPController()
     
     controller2.set_Kp(0.1)
@@ -64,9 +68,7 @@ def task_motor2(shares):
     setpoint_m2, position_m2 = shares
 
     while True:
-#        print("motor2")
         new_setpoint = setpoint_m2.get()
-#        print(new_setpoint)
         controller2.set_setpoint(new_setpoint)
         motor_dvr2.set_duty_cycle(
             controller2.run(new_setpoint, encoder2.read())
@@ -82,30 +84,24 @@ def task_step_response(shares):
     setpoint_m1, position_m1, setpoint_m2, position_m2 = shares
 
     setpoint_m1.put(20000)
-    #print(setpoint_m1.get())
     setpoint_m2.put(10000)
-    #print(setpoint_m2.get())
-    yield 0
+    
     u2 = pyb.UART(2, baudrate=115200)
     start_time = utime.ticks_ms()
     time = 0
 
     data = []
     
-
     while time < 3000:
         time = utime.ticks_ms() - start_time
         data.append(array.array('b',[time,position_m1.get(),position_m2.get()]))
         print([time,position_m1.get(),position_m2.get()])
         yield 0
     
-    for line in Data:
+    for line in data:
         u2.write(f'{line[0]},{line[1]}\r\n')
     u2.write(b"Done!\r\n")
     yield 0
-
-    
-    # Get references to the share and queue which have been passed to this task.
 
 
 # The file main...
@@ -145,7 +141,8 @@ if __name__ == "__main__":
     task3 = cotask.Task(
         task_step_response, name="Task_3", priority=2, period=100,
         profile=True, trace=True, shares=(
-            share_m1_setpoint, share_m1_position, share_m2_setpoint, share_m2_position
+            share_m1_setpoint, share_m1_position, 
+            share_m2_setpoint, share_m2_position
             )
         )
     
