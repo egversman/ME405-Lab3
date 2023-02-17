@@ -24,10 +24,13 @@ class MotorDriver:
         @param timer Motor driver timer which generates PWM signals whose 
                frequency determines the motor speed.
         """
-        self.en_pin = pyb.Pin(en_pin, pyb.Pin.OUT_OD, pyb.Pin.PULL_UP) #consider changing to an output with push pull from open drain
+        self.en_pin = pyb.Pin(en_pin, pyb.Pin.OUT_OD, pull=pyb.Pin.PULL_UP) #consider changing to an output with push pull from open drain
         self.in1pin = pyb.Pin(in1pin, pyb.Pin.OUT_PP)
         self.in2pin = pyb.Pin(in2pin, pyb.Pin.OUT_PP)
         self.timer = pyb.Timer(tim_num, freq= 20000) #change frequency here
+        
+        self.ch1 = self.timer.channel(1, pyb.Timer.PWM, pin=self.in1pin) 
+        self.ch2 = self.timer.channel(2, pyb.Timer.PWM, pin=self.in2pin)
         
         # Turn the motor off for safety
         self.en_pin.low()
@@ -46,8 +49,7 @@ class MotorDriver:
         @param level A signed integer holding the duty cycle of the voltage sent 
                to the motor 
         """
-        ch1 = self.timer.channel(1, pyb.Timer.PWM, pin=self.in1pin) 
-        ch2 = self.timer.channel(2, pyb.Timer.PWM, pin=self.in2pin)
+
         
         #self.en_pin.high() #enable motor
         
@@ -55,11 +57,11 @@ class MotorDriver:
         if level >= 99:
             level = 99
         if level >= 0:
-            ch1.pulse_width_percent(abs(level)) #IN1A low
-            ch2.pulse_width_percent(0) #PWM signal to IN2A
+            self.ch1.pulse_width_percent(abs(level)) #IN1A low
+            self.ch2.pulse_width_percent(0) #PWM signal to IN2A
         elif level < 0:
-            ch1.pulse_width_percent(0) #IN1A low
-            ch2.pulse_width_percent(abs(level)) #PWM signal to IN2A
+            self.ch1.pulse_width_percent(0) #IN1A low
+            self.ch2.pulse_width_percent(abs(level)) #PWM signal to IN2A
         
         #print (f"Setting duty cycle to {level}")
      
@@ -67,6 +69,7 @@ class MotorDriver:
         self.en_pin.high()
     
     def disable(self):
+        self.set_duty_cyle(0)
         self.en_pin.low() #disable motor driver
         
     

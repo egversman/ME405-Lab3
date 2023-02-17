@@ -71,7 +71,9 @@ def task_motor2(shares):
         motor_dvr2.set_duty_cycle(
             controller2.run(new_setpoint, encoder2.read())
             )
-        position_m2.put(len(controller2.motor_positions)-1) # encoder starting to read now when changing the position
+        position_m2.put(
+            controller2.motor_positions[len(controller2.motor_positions)-1]
+            ) # encoder starting to read now when changing the position
         yield 0
 
 def task_step_response(shares):
@@ -91,8 +93,10 @@ def task_step_response(shares):
     data = []
     
     while time < 3000:
+        
         time = utime.ticks_ms() - start_time
         data.append(array.array('b',[time, position_m1.get(), position_m2.get()]))
+#         data.append('b',[time, position_m1.get(), position_m2.get()])
         print([time, position_m1.get(), position_m2.get()])
 #         print(data)
         yield 0
