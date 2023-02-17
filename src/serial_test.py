@@ -13,14 +13,14 @@ Splits the input line into two parts and returns them as a list.
 @param line: line of data to be split
 @return: list of two values split from the line
 """
-split = lambda line: line.strip().split(b',')[:2]
+split = lambda line: line.strip().split(b',')[:3]
 
 
 def to_float(num: str):
     """!
     Converts a string to a float, or returns False if it is not possible.
     @param num string to be converted to float
-    @return float value of the string, or False if the conversion is not 
+    @return float value of the string, or False if the conversion is not
     possible
     """
     try:
@@ -31,57 +31,64 @@ def to_float(num: str):
 
 def process_data():
     """!
-    Reads motor position data from the serial connection and returns the time 
+    Reads motor position data from the serial connection and returns the time
     and position values as two separate lists.
-    @return tuple of two lists, the first being time values and the second being 
+    @return tuple of two lists, the first being time values and the second being
             motor position values
     """
     x = []
-    y = []
+    y1 = []
+    y2 = []
     data = []
     with serial.Serial('COM4', 115200, timeout=10) as ser:
 
-        while "False":
-            line = ser.readline() #.strip()
-            #print(line)
+        while True:
+            line = ser.readline()
 
             if b"done" in line.lower():
                 break
 
             data = split(line)
 
-            if False in {data[0], data[1]}:
+            if False in {data[0], data[1], data[2]}:
                 print(b"problem, idiot!")
             else:
                 x.append(float(data[0]))
-                y.append(float(data[1]))
+                y1.append(float(data[1]))
+                y2.append(float(data[2]))
 
-    return x, y
+    return x, y1, y2
 
-def generate_plot(x: list, y: list):
+def generate_plots(x: list, y1: list, y2: list):
     """!
     Generates a plot of motor position vs. time based on the input data.
     @param x list of time values
     @param y list of motor position values
     """
-    plt.plot(x, y, linestyle='-')
+    plt.plot(x, y1, 'r-')
     plt.xlabel('Time [msec]')
     plt.ylabel('Motor Position [Encoder Ticks]')
     #plt.scatter(x, y)
     plt.show()
 
+    plt.plot(x, y2, 'b-')
+    plt.xlabel('Time [msec]')
+    plt.ylabel('Motor Position [Encoder Ticks]')
+    # plt.scatter(x, y)
+    plt.show()
+
 if __name__ == "__main__":
-    setpoint = str(input('Enter desired setpoint: '))
-    Kp = str(input('Enter desired Kp: '))
-    b_setpoint = setpoint.encode()
-    b_Kp = Kp.encode()
+    x, y1, y2 = process_data()
+    generate_plots(x, y1, y2)
 
-    with serial.Serial('COM4', 115200, timeout = 1000) as ser:
-        ser.write(b_setpoint + b"\r\n")
-        ser.write(b_Kp + b"\r\n")
 
-    x, y = process_data()
-    generate_plot(x, y)
+
+
+
+
+
+
+
 
 
 

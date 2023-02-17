@@ -91,25 +91,35 @@ def task_step_response(shares):
     u2 = pyb.UART(2, baudrate=115200)
     start_time = utime.ticks_ms()
     time = 0
-
-    data = []
     
+    m1_positions = []
+    m2_positions = []
+    times = []
+#     data = []
+    some_flag = 0
     while True:
         #if setpoint reached
         if time < 3000:
             
             time = utime.ticks_ms() - start_time
-            data.append(array.array('b',[time, position_m1.get(), position_m2.get()]))
+            curr_pos_m1 = position_m1.get()
+            curr_pos_m2 = position_m2.get()
+            times.append(time)
+            m1_positions.append(curr_pos_m1)
+            m2_positions.append(curr_pos_m2)
+#             data.append(array.array('b',[time, curr_pos_m1, curr_pos_m2]))
     #         data.append('b',[time, position_m1.get(), position_m2.get()])
-            print([time, position_m1.get(), position_m2.get()])
-    #         print(data)
+            print([time, curr_pos_m1, curr_pos_m2])
+#             print(data)
             yield 0
-        #some_flag = 1
         
-        for line in data:
-            u2.write(f'{line[0]},{line[1]}\r\n')
-        u2.write(b"Done!\r\n")
+        if some_flag == 0:
+            for i in times:
+                u2.write((f'{times[i]},{m1_positions[i]},{m2_positions[i]}\r\n').encode())
+            u2.write(b"Done!\r\n")
+            some_flag = 1
         yield 0
+        # still a memory error down here
 
 
 # The file main...
@@ -169,16 +179,16 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             break
 
-    # Print a table of task data and a table of shared information data
-#     print('\n' + str (cotask.task_list))
-#     print(task_share.show_all())
-#     print(task1.get_trace())
-#     print('')
+    #Print a table of task data and a table of shared information data
+    print('\n' + str (cotask.task_list))
+    print(task_share.show_all())
+    print(task1.get_trace())
+    print('')
 
     # call code to disable motor
-    motor_dvr1.disable()
-    motor_dvr2.disable()
-    
+#     motor_dvr1.disable()
+#     motor_dvr2.disable()
+#     
 
 #write an enable and disable method
     # what is being counted by the encoder here???
