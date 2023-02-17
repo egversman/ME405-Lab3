@@ -73,7 +73,7 @@ def task_motor2(shares):
         motor_dvr2.set_duty_cycle(
             controller2.run(new_setpoint, encoder2.read())
             )
-        position_m2.put(controller2.motor_positions[0])
+        position_m2.put(len(controller2.motor_positions)-1) # encoder starting to read now when changing the position
         yield 0
 
 def task_step_response(shares):
@@ -82,10 +82,10 @@ def task_step_response(shares):
     @param shares A list holding the share and queue used by this task
     """
     setpoint_m1, position_m1, setpoint_m2, position_m2 = shares
-
-    setpoint_m1.put(20000)
-    setpoint_m2.put(10000)
     
+    #setpoint_m1.put(20000)
+    #setpoint_m2.put(10000)
+    # print value of setpoint in diff locations
     u2 = pyb.UART(2, baudrate=115200)
     start_time = utime.ticks_ms()
     time = 0
@@ -122,8 +122,9 @@ if __name__ == "__main__":
     share_m2_position = task_share.Share(
         'l', thread_protect=False, name="Share m2 pos")
     
-#     share_m1_setpoint.put(20000)
-#     share_m2_setpoint.put(10000)
+    share_m1_setpoint.put(20000)
+    share_m2_setpoint.put(10000)
+    # goal of debugging is to gather as much information as possible
     
     # Create the tasks.
     task1 = cotask.Task(

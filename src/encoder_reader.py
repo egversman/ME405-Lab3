@@ -82,15 +82,20 @@ if __name__ == "__main__":
     (counts below zero).
     '''
     import motor_driver
-    moe = motor_driver.MotorDriver (
-        pyb.Pin.board.PA10, pyb.Pin.board.PB4, pyb.Pin.board.PB5, 3
-        )
+    moe = motor_driver.MotorDriver (pyb.Pin.board.PA10, pyb.Pin.board.PB4, pyb.Pin.board.PB5, 3)
     enc = EncoderReader(pyb.Pin.board.PC6, pyb.Pin.board.PC7, 8)
-    moe.set_duty_cycle(100)
+    moe.set_duty_cycle(-100)
+    
+    
+    moe2 = motor_driver.MotorDriver(pyb.Pin.board.PC1, pyb.Pin.board.PA0, pyb.Pin.board.PA1, 5)
+    enc2 = EncoderReader(pyb.Pin.board.PB6, pyb.Pin.board.PB7, 4)
+    moe2.set_duty_cycle(-100)
+    
     
     while True:
-        print(enc.read())
-    
-    
+        print(enc.read(), enc2.read())
+        
+    # encoder flips to positive when negative??
+    # spin encoder with hand to see if it counts
 
 

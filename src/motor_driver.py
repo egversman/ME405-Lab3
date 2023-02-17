@@ -24,10 +24,10 @@ class MotorDriver:
         @param timer Motor driver timer which generates PWM signals whose 
                frequency determines the motor speed.
         """
-        self.en_pin = pyb.Pin(en_pin, pyb.Pin.OUT_OD, pyb.Pin.PULL_UP)
+        self.en_pin = pyb.Pin(en_pin, pyb.Pin.OUT_OD, pyb.Pin.PULL_UP) #consider changing to an output with push pull from open drain
         self.in1pin = pyb.Pin(in1pin, pyb.Pin.OUT_PP)
         self.in2pin = pyb.Pin(in2pin, pyb.Pin.OUT_PP)
-        self.timer = pyb.Timer(tim_num, prescaler = 0, period = 0xFFFF)
+        self.timer = pyb.Timer(tim_num, freq= 20000) #change frequency here
         
         # Turn the motor off for safety
         self.en_pin.low()
@@ -52,12 +52,12 @@ class MotorDriver:
         self.en_pin.high() #enable motor
         
         # set the timer according to the specified PWM duty cycle 'level'
-        if abs(level) >= 99:
+        if level >= 99:
             level = 99
         if level >= 0:
             ch1.pulse_width_percent(abs(level)) #IN1A low
             ch2.pulse_width_percent(0) #PWM signal to IN2A
-        else:
+        elif level < 0:
             ch1.pulse_width_percent(0) #IN1A low
             ch2.pulse_width_percent(abs(level)) #PWM signal to IN2A
         
