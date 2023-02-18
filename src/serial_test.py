@@ -1,14 +1,19 @@
 """!
 @file serial_test.py
-This file is used to test the functionality of a serial connection. The user 
-inputs a desired setpoint and Kp value and sends it to the connected device. The 
-device returns the motor position data which is then processed and plotted. 
+This file is used to test the functionality of a serial connection. It contains 
+one function to plot data from the serial port, which is called in the file 
+main. The device returns the motor position data which is then processed and 
+plotted.
 """
 
 import serial
 from matplotlib import pyplot as plt
 
 def plotter():
+    """!
+    This file plots incoming data from the serial port using the matplotlib 
+    module.
+    """
     x = []
     y = []
     #i = 0

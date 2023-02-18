@@ -23,8 +23,10 @@ import array
 
 def task_motor1(shares):
     """!
-    
-    @param shares A list holding the share and queue used by this task
+    This task creates the motor one objects, sets its proportional control gain,
+    and updates its position based on encoder readings.
+    @param shares A list holding the shares used by this task, the setpoint and 
+    position of motor one.
     """
     # Create motor1 objects.
     motor_dvr1 = motor_driver.MotorDriver()
@@ -51,13 +53,19 @@ def task_motor1(shares):
 
 def task_motor2(shares):
     """!
-    
-    @param shares A list holding the share and queue used by this task
+    This task creates the motor two objects, sets its proportional control gain,
+    and updates its position based on encoder readings.
+    @param shares A list holding the shares used by this task, the setpoint and 
+    position of motor one.
     """
     # Create motor2 objects.
-    motor_dvr2 = motor_driver.MotorDriver(pyb.Pin.board.PC1, pyb.Pin.board.PA0, pyb.Pin.board.PA1, 5)
+    motor_dvr2 = motor_driver.MotorDriver(
+        pyb.Pin.board.PC1, pyb.Pin.board.PA0, pyb.Pin.board.PA1, 5
+        )
     motor_dvr2.enable()
-    encoder2 = encoder_reader.EncoderReader(pyb.Pin.board.PB6, pyb.Pin.board.PB7, 4)
+    encoder2 = encoder_reader.EncoderReader(
+        pyb.Pin.board.PB6, pyb.Pin.board.PB7, 4
+        )
     controller2 = clp_controller.CLPController()
     
     controller2.set_Kp(0.02)
@@ -78,15 +86,11 @@ def task_motor2(shares):
 
 def task_step_response(shares):
     """!
-    
-    @param shares A list holding the share and queue used by this task
+    This task writes the position data of both motors to the serial port.
+    @param shares A list holding the shares used by this task, the setpoints and 
+    positions of motors one and two.
     """
     setpoint_m1, position_m1, setpoint_m2, position_m2 = shares
-    
-    
-    #setpoint_m1.put(20000)
-    #setpoint_m2.put(10000)
-    # print value of setpoint in diff locations
     
     u2 = pyb.UART(2, baudrate=115200)
     start_time = utime.ticks_ms()
@@ -113,21 +117,11 @@ def task_step_response(shares):
             for i in data:
                 u2.write(f'{i[0]},{i[1]}\r\n')
             u2.write(b"Done!\r\n")
-
-    
-
-#               print(f'{times[i]},{m1_positions[i]},{m2_positions[i]}\r\n')
-        #u2.write(str(f'{times[i]},{m1_positions[i]},{m2_positions[i]}\r\n').encode())
-       
-        
+            
         yield 0
 
 
-# The file main...
 if __name__ == "__main__":
-    print("Testing ME405 stuff in cotask.py and task_share.py\r\n"
-          "Press Ctrl-C to stop and show diagnostics.")
-
     # Create shares.
     share_m1_setpoint = task_share.Share(
         'l', thread_protect=False, name="Share m1 setpt"
@@ -143,7 +137,6 @@ if __name__ == "__main__":
     
     share_m1_setpoint.put(20000)
     share_m2_setpoint.put(10000)
-    # goal of debugging is to gather as much information as possible
     
     # Create the tasks.
     task1 = cotask.Task(
@@ -179,17 +172,3 @@ if __name__ == "__main__":
             cotask.task_list.pri_sched()
         except KeyboardInterrupt:
             break
-
-    #Print a table of task data and a table of shared information data
-#     print('\n' + str (cotask.task_list))
-#     print(task_share.show_all())
-#     print(task1.get_trace())
-#     print('')
-
-    # call code to disable motor
-#     motor_dvr1.disable()
-#     motor_dvr2.disable()
-#     
-
-#write an enable and disable method
-    # what is being counted by the encoder here???
