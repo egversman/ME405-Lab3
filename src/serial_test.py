@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 def plotter():
     x = []
     y = []
-    i = 0
+    #i = 0
     with serial.Serial('COM4', 115200, timeout=10) as ser:
         while True:
             try:
@@ -21,7 +21,7 @@ def plotter():
                 x.append(int(data[0]))
                 y.append(int(data[1]))
                 #print(x[i])
-                i+=1
+                #i+=1
                 if x[len(x) - 1] >= 3000:
                     print('we made it!')
                     break
