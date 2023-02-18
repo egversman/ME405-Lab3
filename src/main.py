@@ -32,7 +32,7 @@ def task_motor1(shares):
     encoder1 = encoder_reader.EncoderReader()
     controller1 = clp_controller.CLPController()
     
-    controller1.set_Kp(.01) # IMPORTANT: set this to around .01
+    controller1.set_Kp(.2) # IMPORTANT: set this to around .01
     
     # Get references to the share and queue which have been passed to this task.
     setpoint_m1, position_m1 = shares
@@ -104,14 +104,9 @@ def task_step_response(shares):
             time = utime.ticks_ms() - start_time
             curr_pos_m1 = position_m1.get()
             curr_pos_m2 = position_m2.get()
-            #times.append(time)
-            #m1_positions.append(curr_pos_m1)
-            #m2_positions.append(curr_pos_m2)
-            
+
             data.append(array.array('i',[time, curr_pos_m1, curr_pos_m2]))
-    #         data.append('b',[time, position_m1.get(), position_m2.get()])
             print([time, curr_pos_m1, curr_pos_m2])
-#             print(data)
             yield 0
             
         if time>= 3000:
@@ -152,13 +147,13 @@ if __name__ == "__main__":
     
     # Create the tasks.
     task1 = cotask.Task(
-        task_motor1, name="Task_1", priority=1, period=50, #change the period here
+        task_motor1, name="Task_1", priority=1, period=20, #change the period here
         profile=True, trace=True, shares=(
             share_m1_setpoint, share_m1_position
             )
         )
     task2 = cotask.Task(
-        task_motor2, name="Task_2", priority=1, period=10,
+        task_motor2, name="Task_2", priority=1, period=50,
         profile=True, trace=True, shares=(
             share_m2_setpoint, share_m2_position
             )
